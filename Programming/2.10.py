@@ -1,4 +1,4 @@
-from numpy import empty, size
+import numpy as np
 
 # a)
 
@@ -17,8 +17,11 @@ a2 = float(18.3)
 a3 = float(0.714)
 a4 = float(23.2)
 #
-B = a1*A - a2*A**(2/3) - a3*(Z**2)/(A**(1/3)) - a4*(A - 2*Z)**2/A + a5/A**(1/2)
+def binding_energy(A):
+  B = a1*A - a2*A**(2/3) - a3*(Z**2)/(A**(1/3)) - a4*(A - 2*Z)**2/A + a5/A**(1/2)
+  return B
 
+B = binding_energy(A)
 print(f"The binding energy of this atom is {B} MeV")
 
 
@@ -27,11 +30,13 @@ print(f"The binding energy of this atom is {B} MeV")
 Z = int(input("The atomic number Z is: "))
 def stable_atom(Z):
   #
-  E_per_nucleon = empty(size(range(Z,3*Z)))
-  for A,i in range(Z, 3*Z):
-    B = a1*A - a2*A**(2/3) - a3*(Z**2)/(A**(1/3)) - a4*(A - 2*Z)**2/A + a5/A**(1/2)
-    E_per_nucleon[i] = B/A
-  #
-  A_stable  
+  A = np.arange(Z,3Z)
+  B = binding_energy(A)
+  index_stable = np.argmax(B/A)
+  A_stable = A[index_stable]
+  return A_stable
+
+print(f"The most stable mass number A for the given atomic number Z of {Z} is {stable_atom(Z)}")
+  
 
 
