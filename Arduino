@@ -9,25 +9,33 @@ COMPILED: MOTOR DRIVER + ANALOG + DIGITAL + PULSE-COUNTER
 #define MS2 5
 #define EN  6
 
-#define stp 7
-#define dir 3
-#define MS1 4
-#define MS2 5
-#define EN  6
-
 //Declare variables for functions
 char user_input;
 int x;
 int y;
 int state;
 int i = 0;
-int pushButton = 2;
-int pulsepin = 2; 
-volatile unsigned int pulse; 
 
+// >>> CHANGED: move button off pin 2 (interrupt 0 uses pin 2)
+int pushButton = 8;          // was 2
+int pulsepin   = 2;          // keep pulse on 2 for interrupt 0
 
+// Keep your original volatile type if desired:
+volatile unsigned int pulse = 0;   // 16-bit; wraps at 65535
 
+// --- ADDED: ISR increments pulse on each rising edge
+void count_pulse() {
+  pulse++;
+}
 
+// (Optional) you were calling this in setup; define it if not already present
+void resetEDPins() {
+  digitalWrite(stp, LOW);
+  digitalWrite(dir, LOW);
+  digitalWrite(MS1, LOW);
+  digitalWrite(MS2, LOW);
+  digitalWrite(EN, HIGH);  // disable by default
+}
 
 void setup() {
   pinMode(stp, OUTPUT);
@@ -35,12 +43,17 @@ void setup() {
   pinMode(MS1, OUTPUT);
   pinMode(MS2, OUTPUT);
   pinMode(EN, OUTPUT);
-  pinMode(pushButton, INPUT); // make the pushbutton's pin an input
-  pulse=0; // initializes pulse count
-  pinMode(pulsepin, INPUT); 
-  attachInterrupt(0, count_pulse, RISING); 
-  resetEDPins(); //Set step, direction, microstep and enable pins to default states
-  Serial.begin(9600); //Open Serial connection for debugging
+
+  pinMode(pushButton, INPUT);   // or INPUT_PULLUP if you prefer
+  pinMode(pulsepin, INPUT);     // use appropriate pull-up/down for your sensor
+
+  pulse = 0;
+
+  // >>> OLD STYLE kept, maps to digital pin 2 on Uno/Nano
+  attachInterrupt(0, count_pulse, RISING);
+
+  resetEDPins();
+  Serial.begin(9600);
   Serial.println("Begin motor control");
   Serial.println();
   Serial.println("Enter number for control option:");
@@ -48,6 +61,59 @@ void setup() {
   Serial.println();
 }
 
+//Main loop:
+void loop() {
+  while (Serial.available()) {
+    user_input = Serial.read();
+    digitalWrite(EN, LOW);
+    if (user_input == '3') {
+      SmallStepMode();
+    } else {
+      Serial.println("Invalid option entered.");
+    }
+    resetEDPins();
+  }
+}
+
+// slow increase and data-collection function:
+void SmallStepMode()
+{
+  Serial.println("Stepping at 1/8th microstep mode.");
+  digitalWrite(dir, LOW);
+  digitalWrite(MS1, HIGH);
+  digitalWrite(MS2, HIGH);
+
+  for (x = 1; x < 1000; x++) {
+    // one motor step
+    digitalWrite(stp, HIGH);
+    delay(1000);
+    digitalWrite(stp, LOW);
+    delay(1);
+
+    // ANALOG:
+    int sensorValue = analogRead(A0);
+    Serial.print(sensorValue);
+    Serial.print("  ");
+
+    // DIGITAL:
+    int buttonState = digitalRead(A1);
+    Serial.print(buttonState);
+    Serial.print("  ");
+
+    // PULSE-COUNTER: snapshot once per iteration (atomic read)
+    unsigned int pulses_snapshot;
+    noInterrupts();
+    pulses_snapshot = pulse;
+    interrupts();
+
+    Serial.print("Pulses: ");
+    Serial.println(pulses_snapshot);
+
+    delay(1000); // stability
+  }
+  Serial.println("Enter new option");
+  Serial.println();
+}
 
 
 
