@@ -15,13 +15,11 @@ def beta_func(E):
     beta = np.sqrt(1 - (E_r/E)**2)
     return beta
 
-
 def gamma_func(E):
     gamma = E/E_r
     return gamma
 
-
-def dE_ds(E):
+def stopping_rate(E):
     b = beta_func(E)
     g = gamma_func(E)
     
@@ -32,7 +30,7 @@ def dE_ds(E):
     + 0.125*((g-1.0)/g)**2)
     return  E_deriv
 
-
+dE_ds = lambda s, E: -stopping_rate(E)
 E_loss = solve_ivp(
     dE_ds, 
     t_span=(0, s_max), 
@@ -43,7 +41,7 @@ E_loss = solve_ivp(
 
 
 E_range = np.linspace(1.064, 10.0, 400) 
-S = dE_ds(E_range)
+S = stopping_rate(E_range)
 
 #### plotting stopping rate [MeV/cm] ####
 plt.figure()
