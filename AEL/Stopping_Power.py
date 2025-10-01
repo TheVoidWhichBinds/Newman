@@ -3,12 +3,12 @@ import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
 
 
-E_r = 0.511   #m_0*c^2       [MeV]
-I = 86E-6     #              [MeV]
-C = 9.234e-05 #0.5*rho*K*Z/A [MeV/cm]
-E_max = 1.064     #          [MeV]
-s_min = np.pi*1.9 #          [cm]
-s_max = 50 #          [cm]
+E_r = 0.511 # m_0*c^2 [MeV]
+I = 86E-6 # [MeV]
+C = 9.234e-05 # 0.5*rho*K*Z/A [MeV/cm]
+E_max = 1.064 # [MeV]
+s_min = np.pi*1.9 # [cm]
+s_max = 50 # [cm]
 
 
 def beta_func(E):
@@ -33,28 +33,37 @@ def dE_ds(E):
     return  E_deriv
 
 
+E_loss = solve_ivp(
+    dE_ds, 
+    t_span=(0, s_max), 
+    y0=[E_max], 
+    t_eval = np.linspace(0, s_max, 200))
 
 
-# E_loss = solve_ivp(
-#     dE_ds, 
-#     t_span=(0, s_max), 
-#     y0=[E_max], 
-#     t_eval = np.linspace(0, s_max, 200))
 
-E_range = np.linspace(1.064, 10.0, 400)   # 400 points
-S = dE_ds(E_range)                         # your function is vectorized
+
+E_range = np.linspace(1.064, 10.0, 400) 
+S = dE_ds(E_range)
+
+#### plotting stopping rate [MeV/cm] ####
 plt.figure()
-plt.plot(E_range, S)                       # or: plt.plot(E_range, S, marker='.')
+plt.plot(E_range, S)
 plt.xlabel("Energy [MeV]")
 plt.ylabel("Linear Stopping Power [MeV/cm]")
 plt.title("Relativistic Stopping Power")
 plt.savefig("Stopping_Power.png", dpi=200, bbox_inches="tight")
 
+#### plotting E as a func of distance traveled ####
+plt.figure()
+plt.plot(E_loss.t, E_loss.y[0])
+plt.ylabel("Total Relativistic Energy [MeV]")
+plt.xlabel(" Distance [cm]")
+plt.title("Relativistic Electron Energy Loss")
+plt.savefig("Rel_Energy_Loss")
 
 
-# plt.figure()
-# plt.plot(E_loss.t, E_loss.y[0])
-# plt.ylabel("Total Relativistic Energy [MeV]")
-# plt.xlabel(" Distance [cm]")
-# plt.title("Relativistic Electron Energy Loss")
-# plt.savefig("Rel_Energy_Loss")
+\section{Stopping Function Integration Code}
+\begin{lstlisting}[language=Python, caption={Stopping-Power Integrator}, label={lst:integrator}]
+
+
+\end{lstlisting}
