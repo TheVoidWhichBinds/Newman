@@ -15,18 +15,18 @@ for i in range(num_B_val):
     data_avg[i, :] = np.mean(rows, axis=0) #averaging over rows
 
 
-                        #[0] column = index
+#[0] column = index
 B_field = data_avg[:,1] + B_offset #[1] column = B field [Gauss]
-                        #[2] column = null
+#[2] column = null
 pulses = data_avg[:, 3] #[3] column = pulse count
-plt.gca().yaxis.set_major_locator(ticker.MaxNLocator(integer=True))
+
 
 plt.figure()
 plt.title("Relativistic Electron Momentum")
 plt.xlabel("Average Magnetic Field (Gauss)")
 plt.ylabel("Average Electron Count")
 plt.scatter(B_field, pulses, marker='o', color = 'purple')
-plt.savefig("REM")
+plt.savefig("REM.png", dpi = 200)
 
 
 
