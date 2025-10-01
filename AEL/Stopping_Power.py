@@ -31,7 +31,7 @@ def stopping_rate(E):
     return  E_deriv
 
 dE_ds = lambda s, E: -stopping_rate(E)
-E_loss = solve_ivp(
+E_loss = solve_ivp( 
     dE_ds, 
     t_span=(0, s_max), 
     y0=[E_max], 
