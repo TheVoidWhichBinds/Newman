@@ -60,10 +60,3 @@ plt.ylabel("Total Relativistic Energy [MeV]")
 plt.xlabel(" Distance [cm]")
 plt.title("Relativistic Electron Energy Loss")
 plt.savefig("Rel_Energy_Loss")
-
-
-\section{Stopping Function Integration Code}
-\begin{lstlisting}[language=Python, caption={Stopping-Power Integrator}, label={lst:integrator}]
-
-
-\end{lstlisting}
