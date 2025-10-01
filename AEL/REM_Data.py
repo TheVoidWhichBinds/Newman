@@ -1,10 +1,14 @@
 import matplotlib.pyplot as plt
 import numpy as np 
 
-num_fixed_B =   #number of data points collected at a fixed magnetic field
-num_B_val =   #number of different magnetic field values scanned over
+
+num_fixed_B = 25  #number of data points collected at a fixed magnetic field
+num_B_val = 28  #number of different magnetic field values scanned over
 B_offset = 500 #B field data saved in .txt with fixed offset 
+
 data = np.loadtxt("REM_test.txt", delimiter=",") 
+data_avg = np.empty(num_B_val, 4)
+
 
 for i in range(num_B_val):
     rows = data[i*num_fixed_B:(i+1)*num_fixed_B, :] #slicing rows i*num_fixed_B : (i+1)*num_fixed_B, all columns
