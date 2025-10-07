@@ -19,12 +19,19 @@ def data_averaging(data, knob_pos, upper_B, lower_B, B_offset):
 
     #averaging data in each group:
     out = []
+    w_list = []
+
     for s, e in zip(bounds[:-1], bounds[1:]): #grouping indices of same knob position
         rows = data[s:e, :] #all rows with same knob position
-        out.append(np.mean(rows, axis=0)) #average all columns in those rows
+        #error analysis:
+        w_j = 1/(np.std(rows[:,4], axis=0))**2 #weights for avg B field standard error
+        w_list.append(w_j)
+        #averaging data columns over each knob position:
+        out.append(np.mean(rows, axis=0)) 
+    
     data_avg = np.vstack(out) #stacking all averaged rows into array
-
-    return data_avg
+    w_array = np.array(w_list)
+    return data_avg, w_array
 
 
 
@@ -36,20 +43,28 @@ def data_averaging(data, knob_pos, upper_B, lower_B, B_offset):
 
 
 
-#--------- load data, calling function ------------------------------#
+#--------- load data ------------------------------------------------#
 data1 = pd.read_excel("Bi848.xlsx", sheet_name=0, header=0).to_numpy()
 data2 = pd.read_excel("Bi1146.xlsx", sheet_name=0, header=0).to_numpy()
-#data3 = pd.read_excel("Arduino_Data.xlsx", sheet_name=2, header=0).to_numpy()
+#data3 = pd.read_excel("Bi1568.xlsx", sheet_name=0, header=0).to_numpy()
 
-data_avg = np.vstack(
-    [data_averaging(data1, 298, 1146, 848, 668),
+#--------- averaging data sets & generating std error of B-Field ---------#
+#inserting data runs from 848 Gauss to ???? Gauss
+avg_data = ([
+     data_averaging(data1, 500, 1146, 848, 668),
      data_averaging(data2, 700, 1568, 1146, 908), 
-     #data_averaging(data3, knob_pos, upper_B, lower_B, B_offset)]
+     #data_averaging(data3,400,     , 1146,    )
 ])
-B_field = data_avg[:, 4]
-pulses  = data_avg[:, 3]
 
+#extracting averaged B-field and pulse counts:
+all_avg = np.vstack([out[0] for out in avg_data])
+B_field = all_avg[:, 4]
+pulses  = all_avg[:, 3]
 
+#extracting error weights and calculating standard error of B-field:
+all_weights = np.concatenate([out[1] for out in avg_data])
+sigma_B = 1/np.sqrt(np.sum(all_weights, axis=0))
+print(f"Standard error of B-field: {sigma_B:.3f} Gauss")
 
 #--------- plotting averaged data ----------#
 plt.figure()
@@ -59,3 +74,4 @@ plt.ylabel("Average Electron Count")
 plt.scatter(B_field, pulses, s=6, marker='o', color='purple')
 plt.savefig("REM.png", dpi=200)
 plt.savefig(os.path.join(downloads_dir, "REM.png"), dpi=200, bbox_inches="tight")
+
