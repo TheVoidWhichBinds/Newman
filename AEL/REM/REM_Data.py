@@ -46,14 +46,14 @@ def data_averaging(data, knob_pos, upper_B, lower_B, B_offset):
 #--------- load data ------------------------------------------------#
 data1 = pd.read_excel("Bi848.xlsx", sheet_name=0, header=0).to_numpy()
 data2 = pd.read_excel("Bi1146.xlsx", sheet_name=0, header=0).to_numpy()
-#data3 = pd.read_excel("Bi1568.xlsx", sheet_name=0, header=0).to_numpy()
+data3 = pd.read_excel("Bi1568.xlsx", sheet_name=0, header=0).to_numpy()
 
 #--------- averaging data sets & generating std error of B-Field ---------#
 #inserting data runs from 848 Gauss to ???? Gauss
 avg_data = ([
      data_averaging(data1, 500, 1146, 848, 668),
      data_averaging(data2, 700, 1568, 1146, 908), 
-     #data_averaging(data3,400,     , 1146,    )
+     data_averaging(data3, 400, 1822, 1568, 1250)
 ])
 
 #extracting averaged B-field and pulse counts:
