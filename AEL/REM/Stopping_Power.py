@@ -6,9 +6,9 @@ downloads_dir = os.path.expanduser('~/Downloads')
 
 #---------- constants ----------#
 E_r = 0.511 #m_0*c^2 [MeV]
-I = 86E-6 #[MeV]
-C = 9.234e-05 #0.5*rho*K*Z/A [MeV/cm]
-E_max = 1.44 #[MeV] initial energy of electron
+I = 8.57E-5 #[MeV]
+C = 9.24E-5 #0.5*rho*K*Z/A [MeV/cm]
+E_max = 1.48 #[MeV] initial energy of electron
 s_avg = np.pi*2.5 #[cm] average arc length to detector
 s_max = 50 #[cm] arbitrary large distance for energy loss plotting
 
@@ -54,7 +54,7 @@ plt.xlabel("Energy [MeV]")
 plt.ylabel("Linear Stopping Power [MeV/cm]")
 plt.title("Relativistic Stopping Power")
 plt.savefig("Stopping_Power.png", dpi=200, bbox_inches="tight")
-plt.savefig(os.path.join(downloads_dir, "Stopping_Power.png"), dpi=200, bbox_inches="tight")
+#plt.savefig(os.path.join(downloads_dir, "Stopping_Power.png"), dpi=200, bbox_inches="tight")
 
 #---------- plotting E as a func of distance traveled -----------#
 plt.figure()
@@ -63,7 +63,7 @@ plt.ylabel("Total Relativistic Energy [MeV]")
 plt.xlabel(" Distance [cm]")
 plt.title("Relativistic Electron Energy Loss")
 plt.savefig("Rel_Energy_Loss")
-plt.savefig(os.path.join(downloads_dir, "Rel_Energy_Loss.png"), dpi=200, bbox_inches="tight")
+#plt.savefig(os.path.join(downloads_dir, "Rel_Energy_Loss.png"), dpi=200, bbox_inches="tight")
 
 #---------- finds E_det from trajectory arc length s ----------#
 #given E_loss plot x axis (distance s), and target distance s, find index of closest distance in s_range
