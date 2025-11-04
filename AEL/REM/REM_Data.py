@@ -7,14 +7,14 @@ downloads_dir = os.path.expanduser('~/Downloads')
 
 
 #-------- data averaging function ----------------------------#
-def data_averaging(data, knob_pos, upper_B, lower_B, B_offset):
-    #compute B-field from Gaussmeter reading:
+def data_averaging(data, knob_pos, lower_B, upper_B, B_offset):
+    #compute B-field from Arduino analog output:
     dial_rate = (upper_B - lower_B) / knob_pos
     data[:, 4] = data[:, 1] + B_offset + dial_rate * data[:, 0]
     #group data by knob position (column 0) and average the other columns:
     #(for some reason, # data pts per knob pos inconsistent)
     col0 = data[:, 0]
-    change = np.concatenate(([True], col0[1:] != col0[:-1])) #boolean array where knobob position changes
+    change = np.concatenate(([True], col0[1:] != col0[:-1])) #boolean array where knob position changes
     bounds = np.flatnonzero(change) #indexing where knobob position changes
 
     #averaging data in each group:
@@ -27,8 +27,15 @@ def data_averaging(data, knob_pos, upper_B, lower_B, B_offset):
         out.append(np.mean(rows, axis=0))
         w_list.append(1/np.std(rows[:, 4], ddof=1)**2) #weight for std error of B-field
     
-    data_avg = np.vstack(out) #stacking all averaged rows into array
+    #stacking lists into arrays:
+    data_array = np.vstack(out)
     w_array = np.array(w_list)
+   
+    #averaging over 5 B-field values at a time:
+    chunk_size = 5
+    chunks = np.array_split(data_array, range(chunk_size, data_array.shape[0], chunk_size), axis=0)
+    data_avg = np.vstack([c.mean(axis=0) for c in chunks])
+    
     return data_avg, w_array
 
 
@@ -51,9 +58,9 @@ data3 = pd.read_excel("Bi1568.xlsx", sheet_name=0, header=0).to_numpy()
 #--------- averaging data sets & generating std error of B-Field ---------#
 #inserting data runs from 848 Gauss to ???? Gauss
 avg_data = ([
-     data_averaging(data1, 500, 1146, 848, 668),
-     data_averaging(data2, 700, 1568, 1146, 908), 
-     data_averaging(data3, 400, 1822, 1568, 1320)
+     data_averaging(data1, 500, 848, 1146, 674),
+     data_averaging(data2, 700, 1146, 1568, 919),
+     data_averaging(data3, 400, 1568, 1822, 1320) 
 ])
 
 #extracting averaged B-field and pulse counts:
@@ -81,5 +88,5 @@ plt.xlabel("Average Magnetic Field (Gauss)")
 plt.ylabel("Average Electron Count")
 plt.scatter(B_field, pulses, s=6, marker='o', color='purple')
 plt.savefig("REM.png", dpi=200)
-plt.savefig(os.path.join(downloads_dir, "REM.png"), dpi=200, bbox_inches="tight")
+#plt.savefig(os.path.join(downloads_dir, "REM.png"), dpi=200, bbox_inches="tight")
 
