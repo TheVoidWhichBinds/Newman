@@ -31,6 +31,7 @@ def theory():
 
 
 #------------- Plotting -----------------#
+#Theoretical Y_t vs f(Y_t):
 plt.figure()
 plt.xlabel('Foil Detector Distance Y [cm]')
 plt.ylabel('Angular Dependence of Count Rate f(Y)')
@@ -39,4 +40,4 @@ Y_t, fY_t = theory()
 plt.plot(Y_t, fY_t)
 plt.savefig('f(Y).png')
 
-
+#
