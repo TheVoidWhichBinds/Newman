@@ -6,16 +6,18 @@ downloads_dir = os.path.expanduser('~/Downloads')
 
 
 
+
 #--------- Global variables/Constants ---------#
 k_B = 1.380649E-23   #Boltzmann's constant [J/K]
 T = 298              #Temperature [K]
 d = 3E-6             #Bead diameter [m]
 nu = 8.9E-4          #Viscosity of medium (H2O) [Pa·s]
 base_dir = "Brownian_Data"
-
+#
 #QPD conversion factors: given in V/µm -> convert to V/m
 calib_x = 579e-3 * 1e6   #0.579 V/µm -> [V/m]
 calib_y = 488e-3 * 1e6   #0.488 V/µm -> [V/m]
+
 
 
 
@@ -54,28 +56,30 @@ def load_TD(laser_amp):
         skip_header=4,
         autostrip=True,
     )
+    time = np.var(TD[:, 0])
     var_x = np.var(TD[:, 1] / calib_x)
     var_y = np.var(TD[:, 2] / calib_y)
-    return var_x, var_y #variances in x and y
+    return time, var_x, var_y #variances in x and y
 
 
 
-#-------- Fitting Theory to Data and Plotting -------#
+
+#-------- Fitting Theory to Data and Plotting Functions -------#
 #theoretical power spectrum function
 def power_spectrum(f, P_0, f_0):
     return P_0 * f_0**2 / (f**2 + f_0**2)
 
 
 #fits and plots power spectrum function to data:
-def fit_and_plot(laser_amp, f_data, P_data, variance):
+def PSD(laser_amp, f_data, P_data, variance):
     #theoretical constants
     alpha_theory = k_B * T / variance #trap stiffness [N/m]
     beta = 3 * np.pi * nu * d #drag coefficient [N·s/m]
     f_0_theory = alpha_theory / (2 * np.pi * beta) #corner frequency [Hz]
     P_0_theory = 2 * k_B * T / (np.pi * alpha_theory * f_0_theory) #plateau PSD [m²/Hz]
     f = np.logspace(0, 4, 1000) #frequency range [Hz]
-
-    #curve fitting to get experimental parameters:
+    #
+    # Curve fitting to get experimental parameters:
     popt, pcov = curve_fit(
         power_spectrum,
         f_data,
@@ -86,9 +90,8 @@ def fit_and_plot(laser_amp, f_data, P_data, variance):
     alpha_exp = popt[1] * 2 * np.pi * beta #experimental trap stiffness [N/m]
     print(f"$alpha$ at {laser_amp} mA: {alpha_exp:.3e} N/m")
     print(f"$k_Bex$ at {laser_amp} mA: {alpha_exp * variance / T:.3e} J/K\n")
-
-    
-    #plotting:
+    #
+    # Plotting:
     plt.figure(figsize=(7, 5))
     plt.title(f"Power Spectrum ({laser_amp} mA Laser Current)")
     plt.xscale("log")
@@ -107,17 +110,19 @@ def fit_and_plot(laser_amp, f_data, P_data, variance):
 
 
 
-#-------- Full Process with Intensities Specified --------#
-intensities = [150, 200, 250, 300]
 
+#--------- PSD Plotting ---------#
+intensities = [150, 200, 250, 300]
+#
 for I in intensities:
     freq_data, pow_x, pow_y= load_FD(I) #getting the power spectral density data
-    var_x, var_y = load_TD(I) #getting the x and y variances
-    fit_and_plot(I, freq_data, pow_x, var_x) #plotting for specific axis & intensity
+    time, var_x, var_y = load_TD(I) #getting the x and y variances
+    PSD(I, freq_data, pow_x, var_x) #plotting for specific axis & intensity
 
 
 
-#-------- Trap Stiffness vs. Laser Intensity --------#
+
+#------ Trap Stiffness vs. Laser Intensity Plotting ------#
 I = np.array(intensities) #laser intensities [mA]
 #Experimental trap stiffnesses [N/m]:
 alpha_x = np.array([
@@ -133,6 +138,7 @@ alpha_y = np.array([
     3.329e-08    # 300 mA
 ])
 
+# Plots:
 plt.figure(figsize=(7, 5))
 plt.title("Trap Stiffness vs. Laser Intensity")
 plt.xlabel("Laser Intensity [mA]")
