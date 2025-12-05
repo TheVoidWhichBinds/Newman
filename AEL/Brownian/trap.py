@@ -89,7 +89,7 @@ def PSD(laser_amp, f_data, P_data, variance):
     P_fit = power_spectrum(f, *popt)
     alpha_exp = popt[1] * 2 * np.pi * beta #experimental trap stiffness [N/m]
     print(f"$alpha$ at {laser_amp} mA: {alpha_exp:.3e} N/m")
-    print(f"$k_Bex$ at {laser_amp} mA: {alpha_exp * variance / T:.3e} J/K\n")
+    #print(f"$k_Bex$ at {laser_amp} mA: {alpha_exp * variance / T:.3e} J/K\n")
     #
     # Plotting:
     plt.figure(figsize=(7, 5))
@@ -117,6 +117,7 @@ intensities = [150, 200, 250, 300]
 for I in intensities:
     freq_data, pow_x, pow_y= load_FD(I) #getting the power spectral density data
     time, var_x, var_y = load_TD(I) #getting the x and y variances
+    #print(f'x and y variances are:{var_x, var_y}')
     PSD(I, freq_data, pow_x, var_x) #plotting for specific axis & intensity
 
 
@@ -127,7 +128,7 @@ I = np.array(intensities) #laser intensities [mA]
 #Experimental trap stiffnesses [N/m]:
 alpha_x = np.array([
     9.924e-08,   # 150 mA
-    -1.042e-07,  # 200 mA
+    1.042e-07,  # 200 mA
     1.405e-07,   # 250 mA
     1.169e-07    # 300 mA
 ])
@@ -145,8 +146,9 @@ plt.xlabel("Laser Intensity [mA]")
 plt.ylabel("Trap Stiffness $\\alpha$ [N/m]")
 plt.plot(I, alpha_x, '-o', markersize=8, color='blue', label='X-axis')
 plt.plot(I, alpha_y, '-o', markersize=8, color='orange', label='Y-axis')
-plt.legend(loc='lower right')
+plt.legend(loc='center right')
 plt.grid(True, which="both", ls="--", alpha=0.6)
 plt.tight_layout()
 plt.savefig("Alpha_Intensity.png", dpi=300)
+plt.show()
 plt.savefig(os.path.join(downloads_dir, "alpha.png"), dpi=200, bbox_inches="tight")
