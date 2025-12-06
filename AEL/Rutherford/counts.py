@@ -19,12 +19,12 @@ rho= 1.932E1 #gold foil density [g/cm^3]
 E_s= 4.4 - 0.3*(rho*t) #energy of scattered alpha particles (source energy - foil loss) [MeV]
 N_A= 6.02214076E23 #Avogadro's # [1/mol]
 A_g= 197.2 #atomic mass of gold [amu][g/mol]
-N_0= 3# source emission rate [counts/min].             #FAKE NUMBER _ NEEDS TO CHANGE ___
+N_0= 3# source emission rate [counts/min]             #FAKE NUMBER _ NEEDS TO CHANGE ___
 #Constant Calculations:
 R= (Z*z*e**2)**2/(16*E_s**2) #Rutherford constant
 G= R* ((rho* N_A* np.pi*(r_o**2 - r_i**2)* t)*(np.pi* r_d**2) / (A_g* (X**2 + r_1**2)* r_1**2)) #[cm^-2 MeV^-2]
 
-
+print(f'G is {G}')
 
 #------------ Downloading Data -------------#
 #data= pd.read_excel('Rutherford_Data.xlsx')
