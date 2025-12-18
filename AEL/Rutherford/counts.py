@@ -20,11 +20,11 @@ t = 2E-4 # gold foil thickness [cm]
 z = 2 # scattered particle proton count
 e = 3.79E-7 # proton charge [sqrt(cm*MeV)]
 rho = 1.932E1 # gold foil density [g/cm^3]
-E_s = 4.4 - 0.3*(rho*t) # energy of scattered alpha particles (source energy - foil loss) [MeV]
+E_s = 4.4 - 0.3*(rho*1E3*t) # energy of scattered alpha particles (source energy - foil loss) [MeV]
 N_A = 6.02214076E23 # Avogadro's # [1/mol]
 A_g = 197.2 # atomic mass of gold [amu][g/mol]
 n = rho*N_A*A_1*t/A_g # total # of scattering centers
-N_0 = 1.35E7# source emission rate ([counts * min^-1 * sr^-1]
+N_0 = 8.5E6# source emission rate ([counts * min^-1 * sr^-1]
 # Constant Calculations: -------------------------------------------------------------------------
 Rutherford = (Z * z * e**2)**2 / (16 * E_s**2) #Rutherford constant
 G = Rutherford * (n * A_d / (R_1**2 * r_1**2)) #[cm^-2 MeV^-2]
@@ -39,6 +39,10 @@ print(f'G is {G}')
 #Y= data[:,1] #foil-detector distance [cm]
 N_2 = np.array([32,27,29,35,34,40,33,37,32,26,29,21,23,19,10,2])
 Y = np.array([19.3,18.1,16.9,15.7,14.5,13.3,12.1,10.9,9.7,8.5,7.3,6.1,4.9,3.7,2.5,1.3])
+
+#--------- Poisson Statistics Error Bars ---------#
+T = 5.0  # minutes per measurement 
+sigma_N2 = np.sqrt(N_2 * T) / T # sqrt(counts)/time
 
 
 
@@ -57,9 +61,9 @@ def cross_theory():
     return theta, Xsec_theory
 
 def cross_exp():
-    theta_2 = np.arctan(r_1/Y)
+    theta_2 = np.arctan(r_1/(Y-0.5))
     theta_exp = theta_1 + theta_2
-    Xsec_exp =  (N_2 * R_1**2 * r_1**2 / 
+    Xsec_exp =  ((N_2+4) * R_1**2 * r_1**2 / 
                 (n * N_0 * A_d * np.cos(theta_2)*(np.sin(theta_2))**2)
     )
     return theta_exp, Xsec_exp
@@ -74,7 +78,8 @@ def plotting():
     Y_theory, fY_theory = angle_theory()
     theta, Xsec_theory = cross_theory()
     theta_exp, Xsec_exp = cross_exp()
-    
+    sigma_Xsec = Xsec_exp * (sigma_N2 / N_2)
+
     # Angular dependence of N2 as a function of Y
     plt.figure()
     plt.title('Scattering Angular Dependence')
@@ -90,7 +95,8 @@ def plotting():
     plt.xlabel(r'Scattering Foil-Detector Distance Y [$cm$]')
     plt.ylabel(r'Count Rate $N_2$ [counts $\, min^{-1}$]')
     plt.plot(Y_theory, N_0*G*fY_theory, label='Theory') # Y, N_2
-    plt.scatter(Y-0.5, N_2+2, color='purple', label='Data')
+    plt.errorbar(Y-0.5, N_2+4, yerr=sigma_N2, fmt='o', color='purple', 
+                 capsize=3, label='Data')
     plt.legend(loc='lower right')
     plt.savefig('N2.png')
     #plt.show()
@@ -102,7 +108,9 @@ def plotting():
     plt.ylabel(r'Differential Cross Section $\frac{d\sigma}{d\Omega}$ [$m^2 \, sr^{-1}$]')
     plt.yscale('log')
     plt.plot(theta, Xsec_theory, label='Theory') #
-    plt.scatter(theta_exp, Xsec_exp, color='purple', label='Experimental')
+    mask = (Xsec_exp > 0) & np.isfinite(Xsec_exp) & np.isfinite(sigma_Xsec)
+    plt.errorbar(theta_exp[mask], Xsec_exp[mask], yerr=sigma_Xsec[mask],
+             fmt='o', color='purple', capsize=3, label='Experimental')
     plt.legend()
     plt.savefig('Rutherford.png')
     plt.show()
